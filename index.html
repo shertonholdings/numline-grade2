@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grade 2 - Number Line Exercises</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        #logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        #logo img {
+            width: 150px;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        #instructions {
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+        #number-line {
+            position: relative;
+            height: 100px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        .number {
+            position: absolute;
+            bottom: 0;
+            width: 30px;
+            text-align: center;
+            cursor: pointer;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        .missing {
+            background-color: #ffcccc; /* Highlight missing numbers */
+        }
+        .button {
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        .button:hover {
+            background-color: darkgreen;
+        }
+        #feedback {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        #number-options {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .option {
+            margin: 5px;
+            padding: 10px;
+            background-color: #add8e6; /* Light blue for options */
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+        #more-lessons {
+            margin-top: 40px;
+            font-size: 18px;
+            background-color: green;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+        }
+        #more-lessons:hover {
+            background-color: darkgreen;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Logo at the top -->
+    <div id="logo">
+        <img src="https://i.imgur.com/mwpTHJj.png" alt="Logo">
+    </div>
+
+    <h1>Number Line Exercises</h1>
+
+    <!-- Instructions for learners -->
+    <div id="instructions">Fill in the missing number on the number line by dragging the correct number to the question mark (?).</div>
+
+    <!-- Display Number Line -->
+    <div id="number-line"></div>
+
+    <!-- Display number options below the number line -->
+    <div id="number-options"></div>
+
+    <div id="feedback"></div>
+
+    <!-- "More Lessons" button at the bottom -->
+    <a id="more-lessons" href="https://sites.google.com/view/grades-2/home">More Lessons</a>
+
+    <script>
+        const numberLineContainer = document.getElementById('number-line');
+        const feedback = document.getElementById('feedback');
+        const numberOptionsContainer = document.getElementById('number-options');
+        let missingNumber;
+        let options = [];
+
+        function generateNumberLine() {
+            // Clear previous numbers and options
+            numberLineContainer.innerHTML = '';
+            feedback.innerText = '';
+            numberOptionsContainer.innerHTML = '';
+
+            // Generate random missing number
+            const start = Math.floor(Math.random() * 10) * 10; // Start at multiples of 10 (0, 10, ..., 90)
+            const end = start + 20; // Create a segment of 20
+            missingNumber = Math.floor(Math.random() * (end - start)) + start; // Random number within the segment
+
+            // Create number line
+            for (let i = start; i <= end; i++) {
+                const numberDiv = document.createElement('div');
+                numberDiv.innerText = i === missingNumber ? '?' : i; // Show '?' for the missing number
+                numberDiv.className = 'number' + (i === missingNumber ? ' missing' : '');
+                numberDiv.style.left = `${(i - start) * 5}%`; // Adjust position
+                numberLineContainer.appendChild(numberDiv);
+            }
+
+            // Create options for draggable numbers
+            createOptions();
+        }
+
+        function createOptions() {
+            options = [missingNumber]; // Start with the correct answer
+
+            // Generate two random incorrect options
+            while (options.length < 3) {
+                const randomNum = Math.floor(Math.random() * 21) + (missingNumber - 10); // Random number near the missing number
+                if (!options.includes(randomNum) && randomNum >= 0) {
+                    options.push(randomNum);
+                }
+            }
+
+            // Shuffle options for random order
+            options.sort(() => Math.random() - 0.5);
+
+            // Create draggable elements for options
+            options.forEach(num => {
+                createDraggableOption(num);
+            });
+        }
+
+        function createDraggableOption(num) {
+            const optionDiv = document.createElement('div');
+            optionDiv.innerText = num;
+            optionDiv.className = 'option';
+            optionDiv.draggable = true;
+
+            // Set drag event
+            optionDiv.ondragstart = function(event) {
+                event.dataTransfer.setData("text/plain", num);
+            };
+
+            // Append to number options container
+            numberOptionsContainer.appendChild(optionDiv);
+        }
+
+        // Handle drop event on number line
+        numberLineContainer.ondrop = function(event) {
+            event.preventDefault();
+            const draggedNumber = event.dataTransfer.getData("text/plain");
+            const targetNumber = event.target.innerText;
+
+            if (targetNumber === '?') {
+                if (parseInt(draggedNumber) === missingNumber) {
+                    feedback.innerText = "Correct! Well done!";
+                    feedback.style.color = "green";
+                    setTimeout(generateNumberLine, 2000); // Move to next question after 2 seconds
+                } else {
+                    feedback.innerText = "Oops! Try again!";
+                    feedback.style.color = "red";
+                }
+            }
+        };
+
+        // Prevent default behavior for drag over
+        numberLineContainer.ondragover = function(event) {
+            event.preventDefault();
+        };
+
+        // Initialize number line on page load
+        window.onload = function() {
+            generateNumberLine();
+        }
+    </script>
+
+</body>
+</html>
